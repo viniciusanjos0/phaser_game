@@ -1,7 +1,11 @@
 const config = {
   type: Phaser.AUTO,
-  width: 800,
-  height: 600,
+  width: window.innerWidth,
+  height: window.innerHeight,
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH
+  },
   backgroundColor: '#000000',
   physics: {
     default: 'arcade',
@@ -19,9 +23,10 @@ const config = {
   }
 };
 
-let player;
-let player1;
 
+
+let player;
+let zombie;
 let cursors;
 let playerScore = 0, aiScore = 0;
 let playerScoreText, aiScoreText;
@@ -30,74 +35,80 @@ const game = new Phaser.Game(config);
 
 function preload() {
   this.load.spritesheet('zombie', '../assets/zombie.png', {
-    frameWidth: 128,
-    frameHeight: 128
+    frameWidth: 80,
+    frameHeight: 110
   });
 }
 
 
 function create() {
-  this.physics.world.setBounds(0, 0, 800, 600); // limites do mundo iguais à tela
+  const graphics = this.add.graphics();
+  graphics.lineStyle(4, 0xff0000, 1);
+  graphics.strokeRect(0, 0, 3000, 2000);
+  this.physics.world.setBounds(0, 0, 3000, 2000);
   zombie = this.physics.add.sprite(400, 300, 'zombie');
   zombie.setCollideWorldBounds(true);
+  this.cameras.main.setBounds(0, 0, 3000, 2000);
+  this.cameras.main.startFollow(zombie);
+
 
 
   this.anims.create({
     key: 'parado',
-    frames: [ { key: 'zombie', frame: 0 }, { key: 'zombie', frame: 1 }, { key: 'zombie', frame: 2 }, { key: 'zombie', frame: 3 }, { key: 'zombie', frame: 2 }, { key: 'zombie', frame: 1 }],
-    frameRate: 3,
+    frames: [ { key: 'zombie', frame: 0 }, {key: 'zombie', frame: 23 }],
+    frameRate: 2.5,
     repeat: -1
   });
 
   this.anims.create({
-    key: 'correr_right',
-    frames: [ { key: 'zombie', frame: 148 }, { key: 'zombie', frame: 149 }, { key: 'zombie', frame: 150 }, { key: 'zombie', frame: 151 }, { key: 'zombie', frame: 152 }, { key: 'zombie', frame: 153 }, { key: 'zombie', frame: 154 }, { key: 'zombie', frame: 155 },],
+    key: 'correr.lado',
+    frames: [ { key: 'zombie', frame: 9 }, { key: 'zombie', frame: 10 }],
     frameRate: 8,
     repeat: -1
   });
 
   this.anims.create({
-    key: 'correr_y.up',
-    frames: [ { key: 'player2', frame: 35 }, { key: 'player2', frame: 37 } ],
+    key: 'correr.up',
+    frames: [ { key: 'zombie', frame: 5 }, { key: 'zombie', frame: 6 } ],
     frameRate: 8,
     repeat: -1
   });
 
   this.anims.create({
-    key: 'correr_y.down',
-    frames: [ { key: 'player2', frame: 51 }, { key: 'player2', frame: 49 } ],
+    key: 'correr.down',
+    frames: [ { key: 'zombie', frame: 51 }, { key: 'zombie', frame: 49 } ],
     frameRate: 8,
     repeat: -1
   });
 
   zombie.setScale(1);
   cursors = this.input.keyboard.createCursorKeys();
-  
+  this.cameras.main.setZoom(1);
 }
 
 
 function update() {
-  const speed = 150;
+  const speed = 600;
   zombie.setVelocity(0);
-
+  console.log("Câmera:", this.cameras.main.scrollX, this.cameras.main.scrollY);
   /* Movimento horizontal */
   if (cursors.left.isDown) {
-    player1.setVelocityX(-speed);
-    player1.anims.play('correr_x', true);
-    player1.flipX = false; // vira o sprite pra esquerda
+    zombie.setVelocityX(-speed);
+    zombie.anims.play('correr.lado', true);
+    zombie.flipX = true; // vira o sprite pra esquerda
   } else if (cursors.right.isDown) {
     zombie.setVelocityX(speed);
-    zombie.anims.play('correr_right', true);
-    zombie.flipX = true; // pra direita
+    zombie.anims.play('correr.lado', true);
+    zombie.flipX = false; // pra direita
   } else if (cursors.down.isDown) {
-    player1.setVelocityY(-speed);
-    player1.anims.play('correr_y.down', true);
+    zombie.setVelocityY(speed);
+    zombie.anims.play('correr.up', true);
+    zombie.flipX = false; // pra direita
   } else if (cursors.up.isDown) {
-    player1.setVelocityY(speed);
-    player1.anims.play('correr_y.up', true);
+    zombie.setVelocityY(-speed);
+    zombie.anims.play('correr.up', true);
   } else {
     zombie.anims.play('parado', true)
   }
 
-  zombie.anims.play('parado', true)
 }
